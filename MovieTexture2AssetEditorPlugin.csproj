@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+  <PropertyGroup>
+    <Configurations>Developer - Debug;Release - Alpha;Release - Beta;Release - Final</Configurations>
+    <Platforms>x64</Platforms>
+    <TargetFrameworks>net48</TargetFrameworks>
+    <AssemblyTitle>BlankPlugin</AssemblyTitle>
+    <Product>MovieTexture2AssetEditorPlugin</Product>
+    <Copyright>Copyright © 2021</Copyright>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <Authors>MovieTexture2AssetEditorPlugin</Authors>
+    <Company />
+    <AssemblyName>MovieTexture2AssetEditorPlugin</AssemblyName>
+    <RootNamespace>MovieTexture2AssetEditorPlugin</RootNamespace>
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=$(MSBuildProjectName)\</PathMap>
+    <DebugType>embedded</DebugType>
+    <LangVersion>12</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Developer - Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Developer\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release - Alpha|x64' ">
+    <OutputPath>bin\Release\Alpha\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Beta|x64'">
+    <OutputPath>bin\Release\Beta\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release - Final|x64'">
+    <OutputPath>bin\Release\Final\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="FrostyControls">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostyControls.dll</HintPath>
+    </Reference>
+    <Reference Include="FrostyCore">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostyCore.dll</HintPath>
+    </Reference>
+    <Reference Include="FrostyHash">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostyHash.dll</HintPath>
+    </Reference>
+    <Reference Include="FrostyModSupport">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostyModSupport.dll</HintPath>
+    </Reference>
+    <Reference Include="FrostySdk">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostySdk.dll</HintPath>
+    </Reference>
+    <Reference Include="FrostyEditor">
+      <HintPath>E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\FrostyEditor.exe</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec
+      Command="xcopy /Y $(TargetPath) E:\Frosty\FrostyToolsuite\FrostyEditor\bin\Developer\Debug\Plugins\" />
+  </Target>
+
+</Project>
