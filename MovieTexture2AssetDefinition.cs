@@ -7,6 +7,7 @@ using FrostySdk.IO;
 using FrostySdk.Managers;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Media;
 
@@ -37,8 +38,8 @@ namespace MovieTexture2AssetEditorPlugin
         public override List<ToolbarItem> RegisterToolbarItems() {
             return new List<ToolbarItem>
             {
-                new ToolbarItem("Export", "Export Texture", "Images/Export.png", new RelayCommand((object state) => { ExportButton_Click(this, new RoutedEventArgs()); })),
-                new ToolbarItem("Import", "Import Texture", "Images/Import.png", new RelayCommand((object state) => { ImportButton_Click(this, new RoutedEventArgs()); })),
+                new ToolbarItem("Export", "Export Movie", "Images/Export.png", new RelayCommand((object state) => { ExportButton_Click(this, new RoutedEventArgs()); })),
+                new ToolbarItem("Import", "Import Movie", "Images/Import.png", new RelayCommand((object state) => { ImportButton_Click(this, new RoutedEventArgs()); })),
             };
         }
 
@@ -97,8 +98,32 @@ namespace MovieTexture2AssetEditorPlugin
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
         {
-            // Implement import functionality here
-            logger.Log("Import button clicked");
+
+            dynamic root = asset.RootObject;
+            ChunkAssetEntry chunkAssetEntry = App.AssetManager.GetChunkEntry(root.ChunkGuid);
+
+            FrostyOpenFileDialog openFileDialog = new FrostyOpenFileDialog("Import Movie Asset", "WEBM (*.webm)|*.webm", "Movie");
+            if (openFileDialog.ShowDialog())
+            {
+                uint chunkSize = 0;
+                FrostyTaskWindow.Show("Importing Video as Chunk", "Importing...", (task) =>
+                {
+                    using (NativeReader reader = new NativeReader(new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read)))
+                    {
+                        byte[] buffer = reader.ReadToEnd();
+                        App.AssetManager.ModifyChunk(chunkAssetEntry.Id, buffer);
+                        chunkSize = (uint)buffer.Length;
+                    }
+                });
+                root.ChunkSize = chunkSize;
+                App.AssetManager.ModifyEbx(AssetEntry.Name, asset);
+                // Refresh the property grid UI
+                FrostyPropertyGrid pg = (GetTemplateChild("PART_AssetPropertyGrid") as FrostyPropertyGrid);
+                pg.Object = asset.RootObject;
+                InvokeOnAssetModified();
+
+                logger.Log($"Succesfully imported {AssetEntry.Filename}. (ChunkSize was updated automatically; refresh to see changes.)");
+            }
         }
     }
 }
