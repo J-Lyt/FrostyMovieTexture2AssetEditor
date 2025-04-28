@@ -5,8 +5,10 @@ using Frosty.Core.Windows;
 using FrostySdk.Interfaces;
 using FrostySdk.IO;
 using FrostySdk.Managers;
+using FrostySdk.Managers.Entries;
 using System.Collections.Generic;
 using System.IO;
+using System.Media;
 using System.Security.Cryptography;
 using System.Windows;
 using System.Windows.Media;
@@ -48,52 +50,43 @@ namespace MovieTexture2AssetEditorPlugin
             dynamic root = asset.RootObject;
             ChunkAssetEntry chunkAssetEntry = App.AssetManager.GetChunkEntry(root.ChunkGuid);
 
-            FrostySaveFileDialog saveFileDialog = new FrostySaveFileDialog("Export Movie Asset", "WEBM (*.webm)|*.webm", "Movie", AssetEntry.Filename, false);
-            bool result = false;
-            while (true)
+            if (root != null)
             {
-                string initialDir = saveFileDialog.InitialDirectory;
-                result = saveFileDialog.ShowDialog();
+                FrostySaveFileDialog saveFileDialog = new FrostySaveFileDialog("Export Movie Asset", "WEBM (*.webm)|*.webm", "Movie", AssetEntry.Filename, false);
 
-                if (result)
+                string initialDir = saveFileDialog.InitialDirectory;
+
+                if (saveFileDialog.ShowDialog())
                 {
                     FileInfo fileInfo = new FileInfo(saveFileDialog.FileName);
                     saveFileDialog.InitialDirectory = fileInfo.DirectoryName;
 
                     if (fileInfo.Exists)
                     {
-                        if (FrostyMessageBox.Show(saveFileDialog.FileName + " already exists\r\nDo you want to replace it?", "Frosty Editor (Exporting Movie Asset)", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
-                            break;
+                        SystemSounds.Exclamation.Play();
+                        if (FrostyMessageBox.Show("'" + saveFileDialog.FileName + "' already exists.\r\nDo you want to replace it?", "Export Movie Asset", MessageBoxButton.YesNo) == MessageBoxResult.No)
+                            return;
                     }
-                    else
+
+                    FrostyTaskWindow.Show("Exporting video", "Exporting video...", (task) =>
                     {
-                        break;
-                    }
+                        Stream chunkStream = App.AssetManager.GetChunk(chunkAssetEntry);
+                        if (chunkStream != null)
+                        {
+                            using (NativeWriter writer = new NativeWriter(new FileStream(saveFileDialog.FileName, FileMode.Create)))
+                            {
+                                using (NativeReader reader = new NativeReader(chunkStream))
+                                    writer.Write(reader.ReadToEnd());
+                            }
+                        }
+                        else
+                        {
+                            logger.LogError("Failed to export chunk ${chunkAssetEntry.ChunkGuid}. Maybe it doesn't exist?");
+                        }
+                    });
+                    logger.Log("Exported Movie Asset to " + saveFileDialog.FileName);
                 }
             }
-
-            if (!result)
-            {
-                return;
-            }
-
-            FrostyTaskWindow.Show("Exporting video", "Exporting video...", (task) =>
-            {
-                Stream chunkStream = App.AssetManager.GetChunk(chunkAssetEntry);
-                if (chunkStream != null)
-                {
-                    using (NativeWriter writer = new NativeWriter(new FileStream(saveFileDialog.FileName, FileMode.Create)))
-                    {
-                        using (NativeReader reader = new NativeReader(chunkStream))
-                            writer.Write(reader.ReadToEnd());
-                    }
-                }
-                else
-                {
-                    logger.LogError("Failed to export chunk ${chunkAssetEntry.ChunkGuid}. Maybe it doesn't exist?");
-                }
-            });
-            logger.Log("Exported Movie Asset to " + saveFileDialog.FileName);
         }
 
         private void ImportButton_Click(object sender, RoutedEventArgs e)
