@@ -38,11 +38,11 @@ namespace MovieTexture2AssetEditorPlugin
         }
 
         public override List<ToolbarItem> RegisterToolbarItems() {
-            return new List<ToolbarItem>
-            {
-                new ToolbarItem("Export", "Export Movie", "Images/Export.png", new RelayCommand((object state) => { ExportButton_Click(this, new RoutedEventArgs()); })),
-                new ToolbarItem("Import", "Import Movie", "Images/Import.png", new RelayCommand((object state) => { ImportButton_Click(this, new RoutedEventArgs()); })),
-            };
+
+            List<ToolbarItem> list = base.RegisterToolbarItems();
+            list.Add(new ToolbarItem("Export", "Export Movie", "Images/Export.png", new RelayCommand((object state) => { ExportButton_Click(this, new RoutedEventArgs()); })));
+            list.Add(new ToolbarItem("Import", "Import Movie", "Images/Import.png", new RelayCommand((object state) => { ImportButton_Click(this, new RoutedEventArgs()); })));
+            return list;
         }
 
         private void ExportButton_Click(object sender, RoutedEventArgs e)
